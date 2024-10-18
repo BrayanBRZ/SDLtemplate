@@ -34,7 +34,19 @@ bool Engine::Init()
         return false;
     }
 
-    // Preparando os áudios
+    // Preparando as músicas
+    std::vector<std::string> musicPaths = {
+        "C:/msys64/home/braya/SDLtemplate/MyGame/assets/Musics/PalletTown.mp3"
+        // Adicione mais sons aqui...
+    };
+    for (const std::string& path : musicPaths) {
+        if (!LoadMusic(path)) {
+            SDL_Log("Failed to load music: %s", path.c_str());
+            return false;
+        }
+    }
+
+    // Preparando os sons
     std::vector<std::string> soundPaths = {
         "C:/msys64/home/braya/SDLtemplate/MyGame/assets/Sounds/Minecraft Damage.mp3"
         // Adicione mais sons aqui...
@@ -92,7 +104,24 @@ bool Engine::Init()
     Camera::GetInstance()->SetLimitPosition(m_LevelMap->GetMapPosition());
     Camera::GetInstance()->SetLimitDimension(m_LevelMap->GetMapDimension());
 
+    // Toca a música de fundo
+    Engine::GetInstance()->PlayMusic(0);
+    SetMusicVolume(32);
+
     return m_isRunning = true;
+}
+
+// Método para carregar musica
+bool Engine::LoadMusic(const std::string &path)
+{
+    Mix_Music *music = Mix_LoadMUS(path.c_str());
+    if (music == nullptr)
+    {
+        SDL_Log("Failed to load music: %s, Error: %s", path.c_str(), Mix_GetError());
+        return false;
+    }
+    m_MusicsList.push_back(music); // Adiciona a musica ao vetor
+    return true;
 }
 
 // Método para carregar som
@@ -106,6 +135,19 @@ bool Engine::LoadSound(const std::string &path)
     }
     m_SoundsList.push_back(sound); // Adiciona o som ao vetor
     return true;
+}
+
+// Método para tocar musica
+void Engine::PlayMusic(int musicID)
+{
+    if (musicID >= 0 && musicID < m_MusicsList.size())
+    {
+        Mix_PlayMusic(m_MusicsList[musicID], -1);
+    }
+    else
+    {
+        SDL_Log("Invalid music ID: %d", musicID);
+    }
 }
 
 // Método para tocar som
@@ -160,10 +202,15 @@ bool Engine::CleanGame()
     MapParser::GetInstance()->Clean();
     TextureManager::GetInstance()->CleanTexture();
 
+    for (Mix_Music *music : m_MusicsList)
+    { Mix_FreeMusic(music); }
+    m_MusicsList.clear();
+
     for (Mix_Chunk *sound : m_SoundsList)
     { Mix_FreeChunk(sound); }
     m_SoundsList.clear();
 
+    Mix_CloseAudio();
     SDL_DestroyRenderer(m_Renderer);
     SDL_DestroyWindow(m_Window);
 

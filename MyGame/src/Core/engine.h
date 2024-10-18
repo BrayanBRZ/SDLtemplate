@@ -31,10 +31,16 @@ public:
     Player* GetPlayer() { return m_Player; }
     std::vector<Enemy*>& GetEnemies() { return m_Enemies; }
 
+    // Métodos para lidar com música
+    bool LoadMusic(const std::string& path); // Carrega uma musica no vetor
+    void PlayMusic(int musicID); // Toca uma musica pelo índice no vetor
+    void SetMusicVolume(int volume) { Mix_VolumeMusic(volume); }// volume deve estar entre 0 e 128
+    void StopMusic() { Mix_HaltMusic(); }
+
     // Métodos para lidar com áudio
-    bool LoadSound(const std::string& path);  // Carrega um som no vetor
-    void PlaySound(int soundID);  // Toca um som pelo índice no vetor
-    
+    bool LoadSound(const std::string& path); // Carrega um som no vetor
+    void PlaySound(int soundID); // Toca um som pelo índice no vetor
+
 private:
     Engine() = default;
 
@@ -46,6 +52,7 @@ private:
 
     Player* m_Player;
     std::vector<Enemy*> m_Enemies;
+    std::vector<Mix_Music*> m_MusicsList;
     std::vector<Mix_Chunk*> m_SoundsList;
 };
 
